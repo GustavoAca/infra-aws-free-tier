@@ -1,0 +1,51 @@
+name: Reusable Service Deploy
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: false
+        type: string
+        default: '17'
+        description: "Versão do Java"
+      needs_private_key:
+        required: false
+        type: boolean
+        default: false
+        description: "Se true, gera o arquivo private.key (usado no users)"
+    secrets:
+      USERNAME:
+        required: true
+      GH_TOKEN:
+        required: true
+      JWT_PRIVATE_KEY:
+        required: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: ${{ inputs.java_version }}
+
+      - name: Configurar Maven
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ secrets.USERNAME }}</username><password>${{ secrets.GH_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      # Passo condicional para o projeto USERS
+      - name: Configurar chave privada (Condicional)
+        if: ${{ inputs.needs_private_key }}
+        run: echo "${{ secrets.JWT_PRIVATE_KEY }}" > src/main/resources/private.key
+
+      - name: Verificar dependências e package
+        run: mvn -B clean compile
+
+      - name: Verificar dependências
+        run: mvn dependency:resolve

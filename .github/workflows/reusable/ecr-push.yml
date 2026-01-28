@@ -1,0 +1,96 @@
+name: Reusable ECR Push
+
+on:
+  workflow_call:
+    inputs:
+      image_name:
+        required: true
+        type: string
+        description: "Nome da imagem no ECR (ex: lista-service, user-service)"
+      java_version:
+        required: false
+        type: string
+        default: '17'
+      needs_private_key:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+      AWS_ACCOUNT_ID:
+        required: true
+      AWS_REGION:
+        required: true
+      JWT_PRIVATE_KEY:
+        required: false
+      USERNAME:
+        required: true
+      GH_TOKEN:
+        required: true
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: ${{ inputs.java_version }}
+
+      - name: Configurar Maven
+        run: |
+          mkdir -p ~/.m2
+          echo "<settings><servers><server><id>github</id><username>${{ secrets.USERNAME }}</username><password>${{ secrets.GH_TOKEN }}</password></server></servers></settings>" > ~/.m2/settings.xml
+
+      - name: Configurar chave privada (Condicional)
+        if: ${{ inputs.needs_private_key }}
+        run: echo "${{ secrets.JWT_PRIVATE_KEY }}" > src/main/resources/private.key
+
+      - name: Build aplicação
+        run: mvn clean install -DskipTests
+
+      - name: Extrair versão do pom
+        run: echo "PROJECT_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)" >> $GITHUB_ENV
+
+      # =========================
+      # AWS AUTH
+      # =========================
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Login no Amazon ECR
+        uses: aws-actions/amazon-ecr-login@v2
+
+      # =========================
+      # DOCKER BUILD & PUSH
+      # =========================
+      - name: Build imagem Docker
+        run: |
+          docker build -t ${{ inputs.image_name }}:${{ env.PROJECT_VERSION }} .
+
+      - name: Tag imagem para ECR
+        run: |
+          docker tag \
+            ${{ inputs.image_name }}:${{ env.PROJECT_VERSION }} \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ inputs.image_name }}:${{ env.PROJECT_VERSION }}
+
+          docker tag \
+            ${{ inputs.image_name }}:${{ env.PROJECT_VERSION }} \
+            ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ inputs.image_name }}:latest
+
+      - name: Push imagem para ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ inputs.image_name }}:${{ env.PROJECT_VERSION }}
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.AWS_REGION }}.amazonaws.com/${{ inputs.image_name }}:latest
