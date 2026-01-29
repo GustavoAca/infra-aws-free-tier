@@ -15,7 +15,6 @@ on:
 jobs:
   incrementar-versao:
     runs-on: ubuntu-latest
-    needs: build-and-deploy
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
