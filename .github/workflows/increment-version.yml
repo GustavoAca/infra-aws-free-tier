@@ -1,0 +1,48 @@
+name: Reusable Service Deploy
+
+on:
+  workflow_call:
+    inputs:
+      java_version:
+        required: false
+        type: string
+        default: '17'
+        description: "Versão do Java"
+    secrets:
+      GH_TOKEN:
+        required: true
+
+jobs:
+  incrementar-versao:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: ${{ inputs.java_version }}
+          distribution: 'adopt'
+
+      - name: Install xmllint
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libxml2-utils
+
+      - name: Increment version in pom.xml
+        id: increment_version
+        run: |
+          chmod +x ./increment_version.sh
+          ./increment_version.sh
+
+      - name: Commit and push version increment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          git config --global user.name 'github-actions[bot]'
+          git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          git add pom.xml
+          git commit -m "Subindo versão para ${{ env.new_version }}"
+          git push origin main

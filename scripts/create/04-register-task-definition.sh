@@ -1,18 +1,60 @@
 #!/bin/bash
 set -e
 
-AWS_REGION="sa-east-1"
+# ==============================
+# Diretórios
+# ==============================
+ROOT_DIR=$(cd "$(dirname "$0")/../.." && pwd)
+
+TASK_FILE="$ROOT_DIR/ecs/task-definitions/app-task-definition.json"
+GEN_TASK_FILE="$ROOT_DIR/ecs/task-definitions/app-task-definition.gen.json"
+
+REGION="sa-east-1"
+
+# ==============================
+# AWS Account
+# ==============================
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-TASK_FILE="ecs/task-definitions/app-task-definition.json"
 
-echo "Registrando Task Definition..."
-echo "Conta: $ACCOUNT_ID"
-echo "Região: $AWS_REGION"
+echo "📄 Task file origem: $TASK_FILE"
+echo "🛠️ Task file gerado: $GEN_TASK_FILE"
+echo "🧾 Account ID: $ACCOUNT_ID"
 
-sed "s/ACCOUNT_ID/$ACCOUNT_ID/g" $TASK_FILE > /tmp/task-def.json
+# ==============================
+# 1️⃣ Valida existência
+# ==============================
+if [[ ! -f "$TASK_FILE" ]]; then
+  echo "❌ ERRO: Task definition não encontrada"
+  exit 1
+fi
 
+# ==============================
+# 2️⃣ Gera o JSON final
+# ==============================
+sed "s/ACCOUNT_ID/$ACCOUNT_ID/g" "$TASK_FILE" > "$GEN_TASK_FILE"
+
+# ==============================
+# 3️⃣ Valida geração
+# ==============================
+if [[ ! -f "$GEN_TASK_FILE" ]]; then
+  echo "❌ ERRO: Falha ao gerar task definition final"
+  exit 1
+fi
+
+echo "✅ Task definition gerada com sucesso"
+
+# ==============================
+# 4️⃣ Converte path para Windows (CRÍTICO)
+# ==============================
+GEN_TASK_FILE_WIN=$(cygpath -w "$GEN_TASK_FILE")
+
+echo "🪟 Path Windows: $GEN_TASK_FILE_WIN"
+
+# ==============================
+# 5️⃣ Registra no ECS
+# ==============================
 aws ecs register-task-definition \
-  --cli-input-json file:///tmp/task-def.json \
-  --region $AWS_REGION
+  --region "$REGION" \
+  --cli-input-json "file://$GEN_TASK_FILE_WIN"
 
-echo "✅ Task Definition registrada com sucesso"
+echo "🚀 Task definition registrada no ECS com sucesso"

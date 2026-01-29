@@ -25,13 +25,6 @@ echo "⚠️ As seguintes EC2 serão TERMINADAS:"
 echo "$INSTANCE_IDS"
 echo ""
 
-read -p "Confirmar destroy dessas instâncias? (yes/no): " CONFIRM
-
-if [[ "$CONFIRM" != "yes" ]]; then
-  echo "❌ Operação cancelada"
-  exit 1
-fi
-
 aws ec2 terminate-instances \
   --instance-ids $INSTANCE_IDS \
   --region $AWS_REGION

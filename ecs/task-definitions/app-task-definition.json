@@ -2,81 +2,171 @@
   "family": "app-task",
   "networkMode": "bridge",
   "requiresCompatibilities": ["EC2"],
-  "cpu": "512",
-  "memory": "512",
   "containerDefinitions": [
+
     {
-      "name": "gateway",
-      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/gateway:latest",
+      "name": "nginx",
+      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/nginx:latest",
       "essential": true,
-      "cpu": 128,
-      "memory": 128,
+      "cpu": 64,
+      "memory": 64,
       "portMappings": [
         {
-          "containerPort": 8080,
-          "hostPort": 8080,
+          "containerPort": 80,
+          "hostPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/nginx/app",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+
+    {
+      "name": "user-service",
+      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
+      "essential": true,
+      "cpu": 256,
+      "memory": 512,
+      "portMappings": [
+        {
+          "containerPort": 8081,
           "protocol": "tcp"
         }
       ],
       "environment": [
         { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "SERVER_PORT", "value": "8080" }
+        { "name": "PORT", "value": "8081" },
+
+        { "name": "DB_URL", "value": "jdbc:postgresql://rds-endpoint:5432/glaiss?currentSchema=gl_user&TimeZone=America/Sao_Paulo" },
+        { "name": "USER_DB", "value": "gl_user_app" },
+        { "name": "PASSWORD_DB", "value": "gl_user" },
+        { "name": "DB_USER_FLYWAY", "value": "gl_user" },
+        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_user" },
+
+        { "name": "DISCOVERY_ENABLED", "value": "false" },
+        { "name": "EUREKA_CLIENT_ENABLED", "value": "false" },
+        { "name": "FEIGN_ENABLED", "value": "false" },
+        { "name": "LOADBALANCER_ENABLED", "value": "false" },
+
+        { "name": "REDIS_ENABLED", "value": "false" },
+        { "name": "CACHE_TYPE", "value": "simple" }
       ],
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "curl -f http://localhost:8080/actuator/health || exit 1"
+          "curl -f http://localhost:8081/users/actuator/health || exit 1"
         ],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
         "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/app/user-service",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
       }
     },
+
     {
       "name": "lista-service",
       "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/lista-service:latest",
       "essential": true,
-      "cpu": 192,
-      "memory": 192,
+      "cpu": 256,
+      "memory": 512,
       "portMappings": [
         {
           "containerPort": 8082,
-          "hostPort": 0,
           "protocol": "tcp"
         }
       ],
       "environment": [
         { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "SERVER_PORT", "value": "8082" }
+        { "name": "PORT", "value": "8082" },
+
+        {
+          "name": "DB_URL",
+          "value": "jdbc:postgresql://rds-endpoint:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
+        },
+        { "name": "USER_DB", "value": "gl_lista_app" },
+        { "name": "PASSWORD_DB", "value": "gl_lista" },
+
+        { "name": "DB_USER_FLYWAY", "value": "gl_lista" },
+        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_lista" },
+
+        { "name": "DISCOVERY_ENABLED", "value": "false" },
+        { "name": "EUREKA_CLIENT_ENABLED", "value": "false" },
+        { "name": "FEIGN_ENABLED", "value": "false" },
+        { "name": "LOADBALANCER_ENABLED", "value": "false" },
+
+        { "name": "REDIS_ENABLED", "value": "false" },
+        { "name": "CACHE_TYPE", "value": "simple" }
       ],
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "curl -f http://localhost:8082/actuator/health || exit 1"
+          "curl -f http://localhost:8082/lista/actuator/health || exit 1"
         ],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
         "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/app/lista-service",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
       }
     },
+
     {
       "name": "notification-service",
       "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/notification-service:latest",
       "essential": true,
-      "cpu": 192,
-      "memory": 192,
+      "cpu": 256,
+      "memory": 256,
       "portMappings": [
         {
           "containerPort": 8083,
-          "hostPort": 0,
-          "protocol": "tcp"
+          "hostPort": 0
         }
       ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/app/notification",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
       "environment": [
         { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "SERVER_PORT", "value": "8083" }
+        { "name": "SERVER_PORT", "value": "8083" },
+        { "name": "TZ", "value": "America/Sao_Paulo" },
+        { "name": "JAVA_OPTS", "value": "-Xms128m -Xmx256m" },
+
+        { "name": "DB_HOST", "value": "RDS_ENDPOINT_AQUI" },
+        { "name": "DB_PORT", "value": "5432" },
+        { "name": "DB_NAME", "value": "appdb" },
+        { "name": "DB_SCHEMA", "value": "gl_notification" },
+        { "name": "DB_USER", "value": "gl_notification_app" },
+        { "name": "DB_PASSWORD", "value": "gl_notification" },
+        { "name": "DB_USER_FLYWAY", "value": "gl_notification" },
+        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_notification" },
+
+        { "name": "USER_SERVICE_URL", "value": "http://user-service:8081" }
       ],
       "healthCheck": {
         "command": [

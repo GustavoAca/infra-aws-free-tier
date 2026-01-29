@@ -76,10 +76,13 @@ fi
 # ==============================
 # Obter AMI ECS-Optimized
 # ==============================
-AMI_ID=$(aws ssm get-parameter \
-  --name /aws/service/ecs/optimized-ami/amazon-linux-2/recommended/image_id \
+AMI_ID=$(aws ec2 describe-images \
+  --owners amazon \
+  --filters \
+    "Name=name,Values=amzn2-ami-ecs-hvm-*-x86_64-ebs" \
+    "Name=state,Values=available" \
   --region $AWS_REGION \
-  --query "Parameter.Value" \
+  --query "Images | sort_by(@, &CreationDate)[-1].ImageId" \
   --output text)
 
 echo "AMI ECS Optimized: $AMI_ID"
@@ -100,7 +103,6 @@ echo "🚀 Criando instância EC2 ECS"
 aws ec2 run-instances \
   --image-id $AMI_ID \
   --instance-type $INSTANCE_TYPE \
-  --key-name $KEY_NAME \
   --security-group-ids $SG_ID \
   --subnet-id $SUBNET_ID \
   --user-data "$USER_DATA" \
@@ -110,7 +112,5 @@ aws ec2 run-instances \
     {Key=Project,Value=infra-aws-free-tier},
     {Key=Name,Value=ecs-app-instance}
   ]'
-
-
 
 echo "✅ EC2 criada com sucesso"
