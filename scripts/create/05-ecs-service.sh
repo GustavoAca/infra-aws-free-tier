@@ -19,7 +19,13 @@ EXISTING_SERVICE=$(aws ecs describe-services \
   --output text 2>/dev/null || echo "NONE")
 
 if [[ "$EXISTING_SERVICE" == "ACTIVE" ]]; then
-  echo "✔ Service '$SERVICE_NAME' já existe"
+  echo "⚡ Service '$SERVICE_NAME' já existe, atualizando para a última task definition..."
+  aws ecs update-service \
+    --cluster $CLUSTER_NAME \
+    --service $SERVICE_NAME \
+    --task-definition $TASK_FAMILY \
+    --region $AWS_REGION
+  echo "✅ ECS Service atualizado"
   exit 0
 fi
 

@@ -1,12 +1,13 @@
 {
   "family": "app-task",
   "networkMode": "bridge",
-  "requiresCompatibilities": ["EC2"],
+  "requiresCompatibilities": [
+    "EC2"
+  ],
   "containerDefinitions": [
-
     {
       "name": "nginx",
-      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/nginx:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/nginx:latest",
       "essential": true,
       "cpu": 64,
       "memory": 64,
@@ -26,10 +27,9 @@
         }
       }
     },
-
     {
       "name": "user-service",
-      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
       "essential": true,
       "cpu": 256,
       "memory": 512,
@@ -40,22 +40,82 @@
         }
       ],
       "environment": [
-        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "PORT", "value": "8081" },
-
-        { "name": "DB_URL", "value": "jdbc:postgresql://rds-endpoint:5432/glaiss?currentSchema=gl_user&TimeZone=America/Sao_Paulo" },
-        { "name": "USER_DB", "value": "gl_user_app" },
-        { "name": "PASSWORD_DB", "value": "gl_user" },
-        { "name": "DB_USER_FLYWAY", "value": "gl_user" },
-        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_user" },
-
-        { "name": "DISCOVERY_ENABLED", "value": "false" },
-        { "name": "EUREKA_CLIENT_ENABLED", "value": "false" },
-        { "name": "FEIGN_ENABLED", "value": "false" },
-        { "name": "LOADBALANCER_ENABLED", "value": "false" },
-
-        { "name": "REDIS_ENABLED", "value": "false" },
-        { "name": "CACHE_TYPE", "value": "simple" }
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "PORT",
+          "value": "8081"
+        },
+        {
+          "name": "DB_URL",
+          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_user&TimeZone=America/Sao_Paulo"
+        },
+        {
+          "name": "USER_DB",
+          "value": "gl_user_app"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "value": "gl_user"
+        },
+        {
+          "name": "DB_USER_FLYWAY",
+          "value": "gl_user"
+        },
+        {
+          "name": "DB_PASSWORD_FLYWAY",
+          "value": "gl_user"
+        },
+        {
+          "name": "GITHUB_CLIENT_ID",
+          "value": "Ov23litI3PMQh1TmiF1y"
+        },
+        {
+          "name": "GITHUB_CLIENT_REDIRECT_URI",
+          "value": "http://localhost:4200/oauth/callback/github"
+        },
+        {
+          "name": "GITHUB_CLIENT_SECRET",
+          "value": "399535014819699780114a003ba4dcb110427821"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "value": "780236549046-8gfsi22qj1jee5o9ekcc4usrk3r3d9pf:apps:googleusercontent:com"
+        },
+        {
+          "name": "GOOGLE_CLIENT_REDIRECT_URI",
+          "value": "http://localhost:4200/oauth/callback/google"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "value": "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"
+        },
+        {
+          "name": "DISCOVERY_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "FEIGN_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "LOADBALANCER_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "REDIS_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "CACHE_TYPE",
+          "value": "simple"
+        }
       ],
       "healthCheck": {
         "command": [
@@ -76,10 +136,9 @@
         }
       }
     },
-
     {
       "name": "lista-service",
-      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/lista-service:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/lista-service:1.0.0",
       "essential": true,
       "cpu": 256,
       "memory": 512,
@@ -90,26 +149,58 @@
         }
       ],
       "environment": [
-        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "PORT", "value": "8082" },
-
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "PORT",
+          "value": "8082"
+        },
         {
           "name": "DB_URL",
-          "value": "jdbc:postgresql://rds-endpoint:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
+          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
         },
-        { "name": "USER_DB", "value": "gl_lista_app" },
-        { "name": "PASSWORD_DB", "value": "gl_lista" },
-
-        { "name": "DB_USER_FLYWAY", "value": "gl_lista" },
-        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_lista" },
-
-        { "name": "DISCOVERY_ENABLED", "value": "false" },
-        { "name": "EUREKA_CLIENT_ENABLED", "value": "false" },
-        { "name": "FEIGN_ENABLED", "value": "false" },
-        { "name": "LOADBALANCER_ENABLED", "value": "false" },
-
-        { "name": "REDIS_ENABLED", "value": "false" },
-        { "name": "CACHE_TYPE", "value": "simple" }
+        {
+          "name": "USER_DB",
+          "value": "gl_lista_app"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "value": "gl_lista"
+        },
+        {
+          "name": "DB_USER_FLYWAY",
+          "value": "gl_lista"
+        },
+        {
+          "name": "DB_PASSWORD_FLYWAY",
+          "value": "gl_lista"
+        },
+        {
+          "name": "DISCOVERY_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "FEIGN_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "LOADBALANCER_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "REDIS_ENABLED",
+          "value": "false"
+        },
+        {
+          "name": "CACHE_TYPE",
+          "value": "simple"
+        }
       ],
       "healthCheck": {
         "command": [
@@ -130,10 +221,9 @@
         }
       }
     },
-
     {
       "name": "notification-service",
-      "image": "ACCOUNT_ID.dkr.ecr.sa-east-1.amazonaws.com/notification-service:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/notification-service:latest",
       "essential": true,
       "cpu": 256,
       "memory": 256,
@@ -152,21 +242,70 @@
         }
       },
       "environment": [
-        { "name": "SPRING_PROFILES_ACTIVE", "value": "prod" },
-        { "name": "SERVER_PORT", "value": "8083" },
-        { "name": "TZ", "value": "America/Sao_Paulo" },
-        { "name": "JAVA_OPTS", "value": "-Xms128m -Xmx256m" },
-
-        { "name": "DB_HOST", "value": "RDS_ENDPOINT_AQUI" },
-        { "name": "DB_PORT", "value": "5432" },
-        { "name": "DB_NAME", "value": "appdb" },
-        { "name": "DB_SCHEMA", "value": "gl_notification" },
-        { "name": "DB_USER", "value": "gl_notification_app" },
-        { "name": "DB_PASSWORD", "value": "gl_notification" },
-        { "name": "DB_USER_FLYWAY", "value": "gl_notification" },
-        { "name": "DB_PASSWORD_FLYWAY", "value": "gl_notification" },
-
-        { "name": "USER_SERVICE_URL", "value": "http://user-service:8081" }
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "SERVER_PORT",
+          "value": "8083"
+        },
+        {
+          "name": "TZ",
+          "value": "America/Sao_Paulo"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xms128m -Xmx256m"
+        },
+        {
+          "name": "DB_URL",
+          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
+        },
+        {
+          "name": "DB_PORT",
+          "value": "5432"
+        },
+        {
+          "name": "DB_NAME",
+          "value": "appdb"
+        },
+        {
+          "name": "DB_SCHEMA",
+          "value": "gl_notification"
+        },
+        {
+          "name": "DB_USER",
+          "value": "gl_notification_app"
+        },
+        {
+          "name": "DB_PASSWORD",
+          "value": "gl_notification"
+        },
+        {
+          "name": "DB_USER_FLYWAY",
+          "value": "gl_notification"
+        },
+        {
+          "name": "DB_PASSWORD_FLYWAY",
+          "value": "gl_notification"
+        },
+        {
+          "name": "MAIL_HOST",
+          "value": "sandbox.smtp.mailtrap.io"
+        },
+        {
+          "name": "MAIL_PORT",
+          "value": "2525"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "value": "f371b23b3e8006"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "value": "****8d01"
+        }
       ],
       "healthCheck": {
         "command": [
