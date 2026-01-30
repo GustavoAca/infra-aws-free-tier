@@ -5,10 +5,10 @@ REGION="sa-east-1"
 RETENTION_DAYS=7
 
 LOG_GROUPS=(
-  "/ecs/app/user-service"
-  "/ecs/app/lista-service"
-  "/ecs/app/notification-service"
-  "/nginx/app"
+  "ecs-user-service"
+  "ecs-lista-service"
+  "ecs-notification-service"
+  "ecs-nginx"
 )
 
 echo "🔧 Configurando retenção de logs no CloudWatch..."

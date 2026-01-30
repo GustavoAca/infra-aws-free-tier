@@ -21,7 +21,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/nginx/app",
+          "awslogs-group": "ecs-nginx",
           "awslogs-region": "sa-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -130,7 +130,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/app/user-service",
+          "awslogs-group": "ecs-user-service",
           "awslogs-region": "sa-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -215,7 +215,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/app/lista-service",
+          "awslogs-group": "ecs-lista-service",
           "awslogs-region": "sa-east-1",
           "awslogs-stream-prefix": "ecs"
         }
@@ -236,7 +236,7 @@
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
-          "awslogs-group": "/ecs/app/notification",
+          "awslogs-group": "ecs-notification-service",
           "awslogs-region": "sa-east-1",
           "awslogs-stream-prefix": "ecs"
         }

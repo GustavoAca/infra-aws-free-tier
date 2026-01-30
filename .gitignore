@@ -1,1 +1,3 @@
 ecs/task-definitions/*.gen.json
+ecs-key.pem
+.env

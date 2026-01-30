@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "🚀 Iniciando criação completa da infra AWS Free Tier RDS"
+echo "🚀 Iniciando criação da infraestrutura de Banco de Dados (RDS)"
 
 ./rds/00-parameter-group.sh
 
@@ -11,4 +11,4 @@ echo "🚀 Iniciando criação completa da infra AWS Free Tier RDS"
 
 ./rds/03-rds-instance.sh
 
-echo "✅ Infra criada com sucesso"
+echo "✅ Infra de Banco de Dados criada com sucesso"
