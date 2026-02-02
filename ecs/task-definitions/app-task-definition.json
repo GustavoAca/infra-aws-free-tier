@@ -1,6 +1,6 @@
 {
   "family": "app-task",
-  "networkMode": "bridge",
+  "networkMode": "awsvpc",
   "requiresCompatibilities": [
     "EC2"
   ],
@@ -14,7 +14,6 @@
       "portMappings": [
         {
           "containerPort": 80,
-          "hostPort": 80,
           "protocol": "tcp"
         }
       ],
@@ -29,10 +28,10 @@
     },
     {
       "name": "user-service",
-      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
       "essential": true,
       "cpu": 256,
-      "memory": 512,
+      "memory": 256,
       "portMappings": [
         {
           "containerPort": 8081,
@@ -115,6 +114,10 @@
         {
           "name": "CACHE_TYPE",
           "value": "simple"
+        },
+        {
+          "name": "JWT_PRIVATE_KEY",
+          "value": "-----BEGIN PRIVATE KEY-----\n        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHLGz1rRulh0f3\n        HaF+M1LI2fPgVeZKk/P0JEtu1WW+CGdngb0cHdn75nYd+ksg9qGgLKn4GLxv2CYO\n        57epECdxI0fXosJw2s5gVqnP0yhbdTqKM4pkmyjB1YOcdjx7cWNIFPDmzhf1zbCF\n        ra/0SuNA1h0ggNeapahabbbToywPNvBDhtCjr3/MxhTTFSYjRlBWJhVroNW9ddmt\n        jLIs068mtLEX4Wzd83cy/r+sQubCtH0ok0v41oq5BbsENXwvR/mbp1q+1DDNKbCR\n        H4GVP3vjA8892dk34LNFb7vAAdOwzDUPycS0vZuQeHVfzan7afIyX6pD8W1NpgS9\n        udrM8ax7AgMBAAECggEAM8PXGc8A9XeAe7hmxY7/QBZtbOvGa7GiYNyiAk9SHx6+\n        CUfN56XWhsKyBj6MEignf6K8FjAPoZ3y3kLZGAaLybrarC+wC3bC1oUPo2UFAygn\n        q82TdWxiHmaoyxxrwcWJgS14IvSDg64O599pcLuZ7rr3XQA/iQDvDXmgX8bz54vx\n        HThlCGV1I9lBEJitSBmuFM3CqQrup8wU6X/heuLIOUBtx3va1A6fjtCXFlynDrT+\n        CelyaU97tRIbgoxgOrkbqEIbl3i10piHyp4C7q2dsFzLxJXmzV+oPKbqio9PtdUK\n        SjPrY9KainNC6e62LQl/4sL7qSo7NjHsjgG0iKItAQKBgQDywR4YDEkI8qCKOcb1\n        zX9a/eF3b1856t5X8pOzW8Y5p3qV66wQwWCdX7ErccIuaW4cqmEConuVmpevra6A\n        JLb3LnHr6QO21FiFOz2mFQv9tXUw9+4Hur25EGDFKgyxrJGZkvgV5eqjma0szjss\n        lFUJR0Y6ixY+++w0/Dn5FIlS+wKBgQDSCo4Uue5W2XMJGwuUSRuWbOBFsGw8v8dV\n        4VD+iNigzADu0k58FLyE038HLQ4gtY5jRl54Ag47GoZiMxL1gHvm8met5+upIWB0\n        xKOBlUO0UKi5CQLOzzTmCGcvMf9hCJ8QTzNxGZyZ1SFxZrpzujNUvLRuSsP/4uFQ\n        L2wnmmXUgQKBgQCsDur4moSNngLh1g/KGuxAnx/Wmo7BK1KKvXmor8yxAp7lchQU\n        ECwdfzzBETFT2hBcqvp1dprnr5oBv7WmR9+TFU1Tq2WhiaJwVEve0p4cJig5HBGP\n        UvG0IQKl3KcAq9LLKhtC0iJb8MmIr2fLshsPp4AEcJ7E56RE7d1dSQwITwKBgA2H\n        KoGBPC2R0cvrVwKU9tboakVyyHXdMDyCx5GtRK6OlRzMpMtvFnlDmfHfYAKRTvtr\n        49e84ifCXJdkjLsNLG3CfRUBU/dPtAOxSoqlD3hEnalVQD4LsG+EaQjsInOgd4Y4\n        Y6rMKH7r8Dx6jlW3z2iMwt47qIYJmdNtSnz+f8KBAoGANdrpFdXV7H3w36A2Xeq9\n        jh5pBtwUOIROX2kzlkTqROxH7MDuPdCOume4/8Y8gnDeQNXkXxxqydKGi+K0VNIT\n        Bk1sbUOXs9zFLkGwe2jv+L5t2OuqVejltTv7hX18m08mzBjaX5PdnHn0ylULbc8v\n        wvcy9fmb+8TLt4iXndGYnJ8=\n        -----END PRIVATE KEY-----"
         }
       ],
       "healthCheck": {
@@ -141,7 +144,7 @@
       "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/lista-service:1.0.0",
       "essential": true,
       "cpu": 256,
-      "memory": 512,
+      "memory": 256,
       "portMappings": [
         {
           "containerPort": 8082,
@@ -230,7 +233,7 @@
       "portMappings": [
         {
           "containerPort": 8083,
-          "hostPort": 0
+          "protocol": "tcp"
         }
       ],
       "logConfiguration": {
