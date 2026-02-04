@@ -6,7 +6,7 @@ set -e
 # ==============================
 AWS_REGION="sa-east-1"
 CLUSTER_NAME="app-cluster"
-INSTANCE_TYPE="t3.micro" # FREE TIER
+INSTANCE_TYPE="t3.small" # FREE TIER
 SECURITY_GROUP_NAME="ecs-sg"
 IAM_ROLE_NAME="ecsInstanceRole"
 TAG_PROJECT="infra-aws-free-tier"

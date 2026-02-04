@@ -15,7 +15,7 @@ aws cloudwatch put-metric-alarm \
   --dimensions Name=ClusterName,Value=$CLUSTER_NAME Name=ServiceName,Value=$SERVICE_NAME \
   --statistic Minimum \
   --period 60 \
-  --evaluation-periods 2 \
+  --evaluation-periods 3 \
   --threshold 1 \
   --comparison-operator LessThanThreshold \
-  --treat-missing-data breaching
+  --treat-missing-data notBreaching

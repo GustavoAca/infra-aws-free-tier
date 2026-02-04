@@ -1,90 +1,148 @@
 #!/bin/bash
-set -e
+set -euo pipefail
 
-# ==============================
-# Diretórios
-# ==============================
-SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
-POLICY_FILE="$SCRIPT_DIR/ecs-trust-policy.json"
-GEN_POLICY_FILE="$SCRIPT_DIR/ecs-trust-policy-gen.json"
+# ============================================================
+# Configurações globais
+# ============================================================
+AWS_REGION="sa-east-1"
+export AWS_REGION
 
-# ==============================
-# 0️⃣ Pega Account ID
-# ==============================
-ACCOUNT_ID=$(aws sts get-caller-identity --query "Account" --output text)
+ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 
-# ==============================
-# 1️⃣ Valida existência do JSON original
-# ==============================
-if [[ ! -f "$POLICY_FILE" ]]; then
-  echo "❌ ERRO: Policy não encontrada em $POLICY_FILE"
-  exit 1
-fi
+BASE_DIR=$(cd "$(dirname "$0")/.." && pwd)
+POLICY_DIR="$BASE_DIR/ecs/policies"
 
-# ==============================
-# 2️⃣ Gera o JSON final
-# ==============================
-sed "s/ACCOUNT_ID/$ACCOUNT_ID/g" "$POLICY_FILE" > "$GEN_POLICY_FILE"
+# Roles
+INSTANCE_ROLE="ecsInstanceRole"
+EXEC_ROLE="ecsTaskExecutionRole"
+TASK_ROLE="ecs-task-role-app"
 
-# ==============================
-# 3️⃣ Valida geração
-# ==============================
-if [[ ! -f "$GEN_POLICY_FILE" ]]; then
-  echo "❌ ERRO: Falha ao gerar policy final"
-  exit 1
-fi
+# Policies
+APP_POLICY_NAME="ecs-app-secrets-policy"
+EXEC_POLICY_NAME="ecs-execution-secrets-policy"
 
-# ==============================
-# 4️⃣ Converte path para Windows (opcional)
-# ==============================
-if command -v cygpath &> /dev/null; then
-  GEN_POLICY_FILE_WIN=$(cygpath -w "$GEN_POLICY_FILE")
+APP_POLICY_ARN="arn:aws:iam::$ACCOUNT_ID:policy/$APP_POLICY_NAME"
+EXEC_POLICY_ARN="arn:aws:iam::$ACCOUNT_ID:policy/$EXEC_POLICY_NAME"
+
+echo "🔐 Provisionando IAM para ECS"
+echo "🏦 Account ID : $ACCOUNT_ID"
+echo "📂 Policy dir: $POLICY_DIR"
+echo
+
+# ============================================================
+# Validação obrigatória dos arquivos
+# ============================================================
+REQUIRED_POLICIES=(
+  ecs-instance-trust.json
+  ecs-task-trust.json
+  ecs-app-secrets-policy.json
+  ecs-execution-secrets-policy.json
+)
+
+for file in "${REQUIRED_POLICIES[@]}"; do
+  if [[ ! -f "$POLICY_DIR/$file" ]]; then
+    echo "❌ Arquivo de policy não encontrado: $POLICY_DIR/$file"
+    exit 1
+  fi
+done
+
+echo "✅ Todas as policies encontradas"
+echo
+
+# ============================================================
+# 1️⃣ Instance Role (EC2 / ECS Agent)
+# ============================================================
+if aws iam get-role --role-name "$INSTANCE_ROLE" >/dev/null 2>&1; then
+  echo "⚡ Instance Role já existe: $INSTANCE_ROLE"
 else
-  GEN_POLICY_FILE_WIN="$GEN_POLICY_FILE"
-fi
-
-# ==============================
-# 5️⃣ Verifica/Cria a Role
-# ==============================
-ROLE_NAME="ecsInstanceRole"
-ROLE_EXISTS=$(aws iam get-role --role-name $ROLE_NAME --query "Role.RoleName" --output text 2>/dev/null || echo "NONE")
-
-if [[ "$ROLE_EXISTS" == "$ROLE_NAME" ]]; then
-  echo "⚡ IAM Role $ROLE_NAME já existe"
-else
-  echo "➕ Criando IAM Role $ROLE_NAME..."
+  echo "➕ Criando Instance Role: $INSTANCE_ROLE"
   aws iam create-role \
-    --role-name $ROLE_NAME \
-    --assume-role-policy-document "file://$GEN_POLICY_FILE_WIN"
+    --role-name "$INSTANCE_ROLE" \
+    --assume-role-policy-document "$(cat "$POLICY_DIR/ecs-instance-trust.json")"
 fi
 
-# ==============================
-# 6️⃣ Anexa Policies (ECS e SSM)
-# ==============================
-echo "🔗 Anexando policies..."
-
-# Permissão para o ECS Agent funcionar
 aws iam attach-role-policy \
-  --role-name $ROLE_NAME \
-  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role
+  --role-name "$INSTANCE_ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceforEC2Role || true
 
-# Permissão para o Session Manager (SSM) funcionar
 aws iam attach-role-policy \
-  --role-name $ROLE_NAME \
-  --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore
+  --role-name "$INSTANCE_ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore || true
 
-echo "✅ IAM Role configurada com sucesso"
+if ! aws iam get-instance-profile --instance-profile-name "$INSTANCE_ROLE" >/dev/null 2>&1; then
+  echo "➕ Criando Instance Profile"
+  aws iam create-instance-profile \
+    --instance-profile-name "$INSTANCE_ROLE"
 
-# ==============================
-# 7️⃣ Verifica/Cria Instance Profile
-# ==============================
-PROFILE_EXISTS=$(aws iam get-instance-profile --instance-profile-name $ROLE_NAME --query "InstanceProfile.InstanceProfileName" --output text 2>/dev/null || echo "NONE")
+  aws iam add-role-to-instance-profile \
+    --instance-profile-name "$INSTANCE_ROLE" \
+    --role-name "$INSTANCE_ROLE"
+fi
 
-if [[ "$PROFILE_EXISTS" == "$ROLE_NAME" ]]; then
-  echo "⚡ Instance Profile $ROLE_NAME já existe"
+echo "✅ Instance Role configurada"
+echo
+
+# ============================================================
+# 2️⃣ Execution Role (ECS + Secrets Manager)
+# ============================================================
+if aws iam get-role --role-name "$EXEC_ROLE" >/dev/null 2>&1; then
+  echo "⚡ Execution Role já existe: $EXEC_ROLE"
 else
-  echo "➕ Criando Instance Profile..."
-  aws iam create-instance-profile --instance-profile-name $ROLE_NAME
-  aws iam add-role-to-instance-profile --instance-profile-name $ROLE_NAME --role-name $ROLE_NAME
-  echo "✅ Instance Profile criado"
+  echo "➕ Criando Execution Role: $EXEC_ROLE"
+  aws iam create-role \
+    --role-name "$EXEC_ROLE" \
+    --assume-role-policy-document "$(cat "$POLICY_DIR/ecs-task-trust.json")"
 fi
+
+aws iam attach-role-policy \
+  --role-name "$EXEC_ROLE" \
+  --policy-arn arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy || true
+
+if ! aws iam get-policy --policy-arn "$EXEC_POLICY_ARN" >/dev/null 2>&1; then
+  echo "➕ Criando policy Execution (Secrets Manager)"
+  aws iam create-policy \
+    --policy-name "$EXEC_POLICY_NAME" \
+    --policy-document "$(cat "$POLICY_DIR/ecs-execution-secrets-policy.json")"
+fi
+
+aws iam attach-role-policy \
+  --role-name "$EXEC_ROLE" \
+  --policy-arn "$EXEC_POLICY_ARN" || true
+
+echo "✅ Execution Role configurada"
+echo
+
+# ============================================================
+# 3️⃣ Task Role (Permissões da aplicação)
+# ============================================================
+if aws iam get-role --role-name "$TASK_ROLE" >/dev/null 2>&1; then
+  echo "⚡ Task Role já existe: $TASK_ROLE"
+else
+  echo "➕ Criando Task Role: $TASK_ROLE"
+  aws iam create-role \
+    --role-name "$TASK_ROLE" \
+    --assume-role-policy-document "$(cat "$POLICY_DIR/ecs-task-trust.json")"
+fi
+
+if ! aws iam get-policy --policy-arn "$APP_POLICY_ARN" >/dev/null 2>&1; then
+  echo "➕ Criando policy da aplicação"
+  aws iam create-policy \
+    --policy-name "$APP_POLICY_NAME" \
+    --policy-document "$(cat "$POLICY_DIR/ecs-app-secrets-policy.json")"
+fi
+
+aws iam attach-role-policy \
+  --role-name "$TASK_ROLE" \
+  --policy-arn "$APP_POLICY_ARN" || true
+
+echo "✅ Task Role configurada"
+echo
+
+# ============================================================
+# FINAL
+# ============================================================
+echo "🎯 IAM ECS provisionado com sucesso"
+echo
+echo "➡️ Instance Role  : $INSTANCE_ROLE"
+echo "➡️ Execution Role : $EXEC_ROLE"
+echo "➡️ Task Role      : $TASK_ROLE"

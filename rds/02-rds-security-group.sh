@@ -26,7 +26,7 @@ RDS_SG_ID=$(aws ec2 describe-security-groups \
   --query "SecurityGroups[0].GroupId" \
   --output text 2>/dev/null || echo "NONE")
 
-if [[ "$RDS_SG_ID" == "NONE" || "$RDS_SG_ID" == "None" ]]; then
+if [[ "$RDS_SG_ID" == "None" ]]; then
   echo "➕ Criando Security Group do RDS..."
 
   RDS_SG_ID=$(aws ec2 create-security-group \

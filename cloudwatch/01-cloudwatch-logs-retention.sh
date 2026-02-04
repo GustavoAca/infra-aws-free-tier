@@ -9,6 +9,7 @@ LOG_GROUPS=(
   "ecs-lista-service"
   "ecs-notification-service"
   "ecs-nginx"
+  "ecs-rds-bootstrap"
 )
 
 echo "🔧 Configurando retenção de logs no CloudWatch..."

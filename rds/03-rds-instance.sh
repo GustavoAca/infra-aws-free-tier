@@ -1,19 +1,27 @@
 #!/bin/bash
 set -e
 
+# ==============================
+# Configurações
+# ==============================
 AWS_REGION="sa-east-1"
 DB_IDENTIFIER="infra-aws-free-tier-db"
 DB_CLASS="db.t4g.micro"
 DB_ENGINE="postgres"
-DB_NAME="appdb"
+DB_NAME="glaiss"
 DB_USER="glaiss"
-DB_PASSWORD="SenhaForte123!"
+DB_PASSWORD="#PPgg123"
 SUBNET_GROUP="infra-aws-free-tier-subnet-group"
 TAG_KEY="Project"
 TAG_VALUE="infra-aws-free-tier"
 
-echo "🔎 Verificando se o RDS já existe..."
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+BOOTSTRAP_SQL="$SCRIPT_DIR/bootstrap.sql"  # Caminho para seu arquivo SQL
 
+# ==============================
+# Verificar se o RDS já existe
+# ==============================
+echo "🔎 Verificando se o RDS já existe..."
 DB_EXISTS=$(aws rds describe-db-instances \
   --region $AWS_REGION \
   --db-instance-identifier $DB_IDENTIFIER \
@@ -49,13 +57,14 @@ else
     --db-instance-identifier "$DB_IDENTIFIER" \
     --db-instance-class "$DB_CLASS" \
     --engine "$DB_ENGINE" \
+    --engine-version 15.10 \
     --allocated-storage 20 \
     --master-username "$DB_USER" \
     --master-user-password "$DB_PASSWORD" \
     --db-name "$DB_NAME" \
     --vpc-security-group-ids "$RDS_SG_ID" \
     --db-subnet-group-name "$SUBNET_GROUP" \
-    --backup-retention-period 0 \
+    --backup-retention-period 1 \
     --no-publicly-accessible \
     --tags Key="$TAG_KEY",Value="$TAG_VALUE"
 
@@ -72,7 +81,9 @@ aws rds wait db-instance-available \
   --db-instance-identifier $DB_IDENTIFIER \
   --region $AWS_REGION
 
+# ==============================
 # Obter Endpoint
+# ==============================
 ENDPOINT=$(aws rds describe-db-instances \
   --db-instance-identifier $DB_IDENTIFIER \
   --region $AWS_REGION \
@@ -81,3 +92,18 @@ ENDPOINT=$(aws rds describe-db-instances \
 
 echo "✅ RDS pronto para uso!"
 echo "Endpoint: $ENDPOINT"
+
+## ==============================
+## Executar bootstrap.sql
+## ==============================
+#if [[ ! -f "$BOOTSTRAP_SQL" ]]; then
+#  echo "❌ Arquivo não encontrado: $BOOTSTRAP_SQL"
+#  exit 1
+#fi
+#
+#echo "🚀 Executando bootstrap.sql no banco $DB_NAME dentro do container postgres-api..."
+#
+#docker exec -i -e PGPASSWORD="$DB_PASSWORD" lista-devops-postgres-api-1 \
+#  psql -h "$ENDPOINT" -U "$DB_USER" -d "$DB_NAME" -f "$BOOTSTRAP_SQL"
+#
+#echo "✅ bootstrap.sql executado com sucesso"

@@ -1,3 +1,9 @@
 ecs/task-definitions/*.gen.json
+ecs/ecs-trust-policy-gen.json
 ecs-key.pem
 .env
+
+secrets/lista/secrets.json
+secrets/notification/secrets.json
+secrets/users/secrets.json
+secrets/rds-bootstrap/secrets.json

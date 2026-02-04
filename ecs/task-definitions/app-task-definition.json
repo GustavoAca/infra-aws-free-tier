@@ -1,13 +1,15 @@
 {
   "family": "app-task",
   "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::181684851258:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::181684851258:role/ecs-task-role-app",
   "requiresCompatibilities": [
     "EC2"
   ],
   "containerDefinitions": [
     {
       "name": "nginx",
-      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/nginx:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/nginx:1.0.0",
       "essential": true,
       "cpu": 64,
       "memory": 64,
@@ -42,82 +44,92 @@
         {
           "name": "SPRING_PROFILES_ACTIVE",
           "value": "prod"
-        },
-        {
-          "name": "PORT",
-          "value": "8081"
-        },
+        }
+      ],
+      "secrets": [
         {
           "name": "DB_URL",
-          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_user&TimeZone=America/Sao_Paulo"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:DB_URL::"
         },
         {
           "name": "USER_DB",
-          "value": "gl_user_app"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:USER_DB::"
         },
         {
           "name": "PASSWORD_DB",
-          "value": "gl_user"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PASSWORD_DB::"
         },
         {
-          "name": "DB_USER_FLYWAY",
-          "value": "gl_user"
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:USER_DB_FLYWAY::"
         },
         {
-          "name": "DB_PASSWORD_FLYWAY",
-          "value": "gl_user"
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PASSWORD_DB_FLYWAY::"
         },
         {
           "name": "GITHUB_CLIENT_ID",
-          "value": "Ov23litI3PMQh1TmiF1y"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_ID::"
         },
         {
           "name": "GITHUB_CLIENT_REDIRECT_URI",
-          "value": "http://localhost:4200/oauth/callback/github"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_REDIRECT_URI::"
         },
         {
           "name": "GITHUB_CLIENT_SECRET",
-          "value": "399535014819699780114a003ba4dcb110427821"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_SECRET::"
         },
         {
           "name": "GOOGLE_CLIENT_ID",
-          "value": "780236549046-8gfsi22qj1jee5o9ekcc4usrk3r3d9pf:apps:googleusercontent:com"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_ID::"
         },
         {
           "name": "GOOGLE_CLIENT_REDIRECT_URI",
-          "value": "http://localhost:4200/oauth/callback/google"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_REDIRECT_URI::"
         },
         {
           "name": "GOOGLE_CLIENT_SECRET",
-          "value": "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"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_SECRET::"
         },
         {
           "name": "DISCOVERY_ENABLED",
-          "value": "false"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:DISCOVERY_ENABLED::"
         },
         {
           "name": "EUREKA_CLIENT_ENABLED",
-          "value": "false"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:EUREKA_CLIENT_ENABLED::"
         },
         {
           "name": "FEIGN_ENABLED",
-          "value": "false"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:FEIGN_ENABLED::"
         },
         {
           "name": "LOADBALANCER_ENABLED",
-          "value": "false"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:LOADBALANCER_ENABLED::"
         },
         {
           "name": "REDIS_ENABLED",
-          "value": "false"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:REDIS_ENABLED::"
         },
         {
           "name": "CACHE_TYPE",
-          "value": "simple"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:CACHE_TYPE::"
         },
         {
           "name": "JWT_PRIVATE_KEY",
-          "value": "-----BEGIN PRIVATE KEY-----\n        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDHLGz1rRulh0f3\n        HaF+M1LI2fPgVeZKk/P0JEtu1WW+CGdngb0cHdn75nYd+ksg9qGgLKn4GLxv2CYO\n        57epECdxI0fXosJw2s5gVqnP0yhbdTqKM4pkmyjB1YOcdjx7cWNIFPDmzhf1zbCF\n        ra/0SuNA1h0ggNeapahabbbToywPNvBDhtCjr3/MxhTTFSYjRlBWJhVroNW9ddmt\n        jLIs068mtLEX4Wzd83cy/r+sQubCtH0ok0v41oq5BbsENXwvR/mbp1q+1DDNKbCR\n        H4GVP3vjA8892dk34LNFb7vAAdOwzDUPycS0vZuQeHVfzan7afIyX6pD8W1NpgS9\n        udrM8ax7AgMBAAECggEAM8PXGc8A9XeAe7hmxY7/QBZtbOvGa7GiYNyiAk9SHx6+\n        CUfN56XWhsKyBj6MEignf6K8FjAPoZ3y3kLZGAaLybrarC+wC3bC1oUPo2UFAygn\n        q82TdWxiHmaoyxxrwcWJgS14IvSDg64O599pcLuZ7rr3XQA/iQDvDXmgX8bz54vx\n        HThlCGV1I9lBEJitSBmuFM3CqQrup8wU6X/heuLIOUBtx3va1A6fjtCXFlynDrT+\n        CelyaU97tRIbgoxgOrkbqEIbl3i10piHyp4C7q2dsFzLxJXmzV+oPKbqio9PtdUK\n        SjPrY9KainNC6e62LQl/4sL7qSo7NjHsjgG0iKItAQKBgQDywR4YDEkI8qCKOcb1\n        zX9a/eF3b1856t5X8pOzW8Y5p3qV66wQwWCdX7ErccIuaW4cqmEConuVmpevra6A\n        JLb3LnHr6QO21FiFOz2mFQv9tXUw9+4Hur25EGDFKgyxrJGZkvgV5eqjma0szjss\n        lFUJR0Y6ixY+++w0/Dn5FIlS+wKBgQDSCo4Uue5W2XMJGwuUSRuWbOBFsGw8v8dV\n        4VD+iNigzADu0k58FLyE038HLQ4gtY5jRl54Ag47GoZiMxL1gHvm8met5+upIWB0\n        xKOBlUO0UKi5CQLOzzTmCGcvMf9hCJ8QTzNxGZyZ1SFxZrpzujNUvLRuSsP/4uFQ\n        L2wnmmXUgQKBgQCsDur4moSNngLh1g/KGuxAnx/Wmo7BK1KKvXmor8yxAp7lchQU\n        ECwdfzzBETFT2hBcqvp1dprnr5oBv7WmR9+TFU1Tq2WhiaJwVEve0p4cJig5HBGP\n        UvG0IQKl3KcAq9LLKhtC0iJb8MmIr2fLshsPp4AEcJ7E56RE7d1dSQwITwKBgA2H\n        KoGBPC2R0cvrVwKU9tboakVyyHXdMDyCx5GtRK6OlRzMpMtvFnlDmfHfYAKRTvtr\n        49e84ifCXJdkjLsNLG3CfRUBU/dPtAOxSoqlD3hEnalVQD4LsG+EaQjsInOgd4Y4\n        Y6rMKH7r8Dx6jlW3z2iMwt47qIYJmdNtSnz+f8KBAoGANdrpFdXV7H3w36A2Xeq9\n        jh5pBtwUOIROX2kzlkTqROxH7MDuPdCOume4/8Y8gnDeQNXkXxxqydKGi+K0VNIT\n        Bk1sbUOXs9zFLkGwe2jv+L5t2OuqVejltTv7hX18m08mzBjaX5PdnHn0ylULbc8v\n        wvcy9fmb+8TLt4iXndGYnJ8=\n        -----END PRIVATE KEY-----"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:JWT_PRIVATE_KEY::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:SERVICOS_EXTERNOS_PERMITIDOS::"
         }
       ],
       "healthCheck": {
@@ -151,58 +163,68 @@
           "protocol": "tcp"
         }
       ],
+      "secrets": [
+        {
+          "name": "DB_URL",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:DB_URL::"
+        },
+        {
+          "name": "USER_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:USER_DB::"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PASSWORD_DB::"
+        },
+        {
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:USER_DB_FLYWAY::"
+        },
+        {
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PASSWORD_DB_FLYWAY::"
+        },
+        {
+          "name": "DISCOVERY_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:DISCOVERY_ENABLED::"
+        },
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:EUREKA_CLIENT_ENABLED::"
+        },
+        {
+          "name": "FEIGN_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:FEIGN_ENABLED::"
+        },
+        {
+          "name": "LOADBALANCER_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:LOADBALANCER_ENABLED::"
+        },
+        {
+          "name": "REDIS_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:REDIS_ENABLED::"
+        },
+        {
+          "name": "CACHE_TYPE",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:CACHE_TYPE::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "value": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "value": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:SERVICOS_EXTERNOS_PERMITIDOS::"
+        }
+      ],
       "environment": [
         {
           "name": "SPRING_PROFILES_ACTIVE",
           "value": "prod"
-        },
-        {
-          "name": "PORT",
-          "value": "8082"
-        },
-        {
-          "name": "DB_URL",
-          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
-        },
-        {
-          "name": "USER_DB",
-          "value": "gl_lista_app"
-        },
-        {
-          "name": "PASSWORD_DB",
-          "value": "gl_lista"
-        },
-        {
-          "name": "DB_USER_FLYWAY",
-          "value": "gl_lista"
-        },
-        {
-          "name": "DB_PASSWORD_FLYWAY",
-          "value": "gl_lista"
-        },
-        {
-          "name": "DISCOVERY_ENABLED",
-          "value": "false"
-        },
-        {
-          "name": "EUREKA_CLIENT_ENABLED",
-          "value": "false"
-        },
-        {
-          "name": "FEIGN_ENABLED",
-          "value": "false"
-        },
-        {
-          "name": "LOADBALANCER_ENABLED",
-          "value": "false"
-        },
-        {
-          "name": "REDIS_ENABLED",
-          "value": "false"
-        },
-        {
-          "name": "CACHE_TYPE",
-          "value": "simple"
         }
       ],
       "healthCheck": {
@@ -244,14 +266,68 @@
           "awslogs-stream-prefix": "ecs"
         }
       },
+      "secrets": [
+        {
+          "name": "DB_URL",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_URL::"
+        },
+        {
+          "name": "DB_PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_PORT::"
+        },
+        {
+          "name": "DB_NAME",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_NAME::"
+        },
+        {
+          "name": "USER_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:USER_DB::"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PASSWORD_DB::"
+        },
+        {
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:USER_DB_FLYWAY::"
+        },
+        {
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PASSWORD_DB_FLYWAY::"
+        },
+        {
+          "name": "MAIL_HOST",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_HOST::"
+        },
+        {
+          "name": "MAIL_PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_PORT::"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_USERNAME::"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_PASSWORD::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:SERVICOS_EXTERNOS_PERMITIDOS::"
+        }
+      ],
       "environment": [
         {
           "name": "SPRING_PROFILES_ACTIVE",
           "value": "prod"
-        },
-        {
-          "name": "SERVER_PORT",
-          "value": "8083"
         },
         {
           "name": "TZ",
@@ -260,60 +336,12 @@
         {
           "name": "JAVA_OPTS",
           "value": "-Xms128m -Xmx256m"
-        },
-        {
-          "name": "DB_URL",
-          "value": "jdbc:postgresql://infra-aws-free-tier-db.chcgymkqmsoc.sa-east-1.rds.amazonaws.com:5432/glaiss?currentSchema=gl_lista&TimeZone=America/Sao_Paulo"
-        },
-        {
-          "name": "DB_PORT",
-          "value": "5432"
-        },
-        {
-          "name": "DB_NAME",
-          "value": "appdb"
-        },
-        {
-          "name": "DB_SCHEMA",
-          "value": "gl_notification"
-        },
-        {
-          "name": "DB_USER",
-          "value": "gl_notification_app"
-        },
-        {
-          "name": "DB_PASSWORD",
-          "value": "gl_notification"
-        },
-        {
-          "name": "DB_USER_FLYWAY",
-          "value": "gl_notification"
-        },
-        {
-          "name": "DB_PASSWORD_FLYWAY",
-          "value": "gl_notification"
-        },
-        {
-          "name": "MAIL_HOST",
-          "value": "sandbox.smtp.mailtrap.io"
-        },
-        {
-          "name": "MAIL_PORT",
-          "value": "2525"
-        },
-        {
-          "name": "MAIL_USERNAME",
-          "value": "f371b23b3e8006"
-        },
-        {
-          "name": "MAIL_PASSWORD",
-          "value": "****8d01"
         }
       ],
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "curl -f http://localhost:8083/actuator/health || exit 1"
+          "curl -f http://localhost:8083/notification/actuator/health || exit 1"
         ],
         "interval": 30,
         "timeout": 5,

@@ -12,6 +12,7 @@ REPOSITORIES=(
   "lista-service"
   "notification-service"
   "nginx"
+  "rds-bootstrap"
 )
 
 echo "Conta AWS: $ACCOUNT_ID"
