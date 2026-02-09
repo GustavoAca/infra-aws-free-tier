@@ -9,24 +9,24 @@
   "containerDefinitions": [
     {
       "name": "rds-bootstrap",
-      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/rds-bootstrap:latest",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/rds-bootstrap:0.0.1",
       "essential": true,
       "secrets": [
         {
           "name": "DB_HOST",
-          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-n8qsal:DB_HOST::"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-xEFrpO:DB_HOST::"
         },
         {
           "name": "DB_NAME",
-          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-n8qsal:DB_NAME::"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-xEFrpO:DB_NAME::"
         },
         {
           "name": "DB_USER",
-          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-n8qsal:DB_USER::"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-xEFrpO:DB_USER::"
         },
         {
           "name": "PGPASSWORD",
-          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-n8qsal:DB_PASSWORD::"
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:rds-bootstrap-secrets-xEFrpO:DB_PASSWORD::"
         }
       ],
       "logConfiguration": {

@@ -1,0 +1,353 @@
+{
+  "family": "app-task",
+  "networkMode": "awsvpc",
+  "executionRoleArn": "arn:aws:iam::181684851258:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::181684851258:role/ecs-task-role-app",
+  "requiresCompatibilities": [
+    "EC2"
+  ],
+  "containerDefinitions": [
+    {
+      "name": "nginx",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/nginx:1.0.0",
+      "essential": true,
+      "cpu": 64,
+      "memory": 96,
+      "portMappings": [
+        {
+          "containerPort": 80,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "ecs-nginx",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "user-service",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/user-service:latest",
+      "essential": true,
+      "cpu": 256,
+      "memory": 256,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_URL",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:DB_URL::"
+        },
+        {
+          "name": "USER_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:USER_DB::"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PASSWORD_DB::"
+        },
+        {
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:USER_DB_FLYWAY::"
+        },
+        {
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PASSWORD_DB_FLYWAY::"
+        },
+        {
+          "name": "GITHUB_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_ID::"
+        },
+        {
+          "name": "GITHUB_CLIENT_REDIRECT_URI",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_REDIRECT_URI::"
+        },
+        {
+          "name": "GITHUB_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GITHUB_CLIENT_SECRET::"
+        },
+        {
+          "name": "GOOGLE_CLIENT_ID",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_ID::"
+        },
+        {
+          "name": "GOOGLE_CLIENT_REDIRECT_URI",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_REDIRECT_URI::"
+        },
+        {
+          "name": "GOOGLE_CLIENT_SECRET",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:GOOGLE_CLIENT_SECRET::"
+        },
+        {
+          "name": "DISCOVERY_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:DISCOVERY_ENABLED::"
+        },
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:EUREKA_CLIENT_ENABLED::"
+        },
+        {
+          "name": "FEIGN_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:FEIGN_ENABLED::"
+        },
+        {
+          "name": "LOADBALANCER_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:LOADBALANCER_ENABLED::"
+        },
+        {
+          "name": "REDIS_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:REDIS_ENABLED::"
+        },
+        {
+          "name": "JWT_PRIVATE_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:JWT_PRIVATE_KEY::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:users-service-secrets-UcADSr:SERVICOS_EXTERNOS_PERMITIDOS::"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8081/users/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "ecs-user-service",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "lista-service",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/lista-service:1.0.0",
+      "essential": true,
+      "cpu": 128,
+      "memory": 256,
+      "portMappings": [
+        {
+          "containerPort": 8082,
+          "protocol": "tcp"
+        }
+      ],
+      "secrets": [
+        {
+          "name": "DB_URL",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:DB_URL::"
+        },
+        {
+          "name": "USER_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:USER_DB::"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PASSWORD_DB::"
+        },
+        {
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:USER_DB_FLYWAY::"
+        },
+        {
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PASSWORD_DB_FLYWAY::"
+        },
+        {
+          "name": "DISCOVERY_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:DISCOVERY_ENABLED::"
+        },
+        {
+          "name": "EUREKA_CLIENT_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:EUREKA_CLIENT_ENABLED::"
+        },
+        {
+          "name": "FEIGN_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:FEIGN_ENABLED::"
+        },
+        {
+          "name": "LOADBALANCER_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:LOADBALANCER_ENABLED::"
+        },
+        {
+          "name": "REDIS_ENABLED",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:REDIS_ENABLED::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:lista-service-secrets-owyWep:SERVICOS_EXTERNOS_PERMITIDOS::"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xms128m -Xmx256m"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8082/lista/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "ecs-lista-service",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    },
+    {
+      "name": "notification-service",
+      "image": "181684851258.dkr.ecr.sa-east-1.amazonaws.com/notification-service:latest",
+      "essential": true,
+      "cpu": 128,
+      "memory": 256,
+      "portMappings": [
+        {
+          "containerPort": 8083,
+          "protocol": "tcp"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "ecs-notification-service",
+          "awslogs-region": "sa-east-1",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "secrets": [
+        {
+          "name": "DB_URL",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_URL::"
+        },
+        {
+          "name": "DB_PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_PORT::"
+        },
+        {
+          "name": "DB_NAME",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:DB_NAME::"
+        },
+        {
+          "name": "USER_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:USER_DB::"
+        },
+        {
+          "name": "PASSWORD_DB",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PASSWORD_DB::"
+        },
+        {
+          "name": "USER_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:USER_DB_FLYWAY::"
+        },
+        {
+          "name": "PASSWORD_DB_FLYWAY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PASSWORD_DB_FLYWAY::"
+        },
+        {
+          "name": "MAIL_HOST",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_HOST::"
+        },
+        {
+          "name": "MAIL_PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_PORT::"
+        },
+        {
+          "name": "MAIL_USERNAME",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_USERNAME::"
+        },
+        {
+          "name": "MAIL_PASSWORD",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:MAIL_PASSWORD::"
+        },
+        {
+          "name": "PUBLIC_KEY",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PUBLIC_KEY::"
+        },
+        {
+          "name": "PORT",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:PORT::"
+        },
+        {
+          "name": "SERVICOS_EXTERNOS_PERMITIDOS",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:SERVICOS_EXTERNOS_PERMITIDOS::"
+        },
+        {
+          "name": "CHAVES_DE_ACESSO",
+          "valueFrom": "arn:aws:secretsmanager:sa-east-1:181684851258:secret:notification-service-secrets-7t0qzy:CHAVES_DE_ACESSO::"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "prod"
+        },
+        {
+          "name": "TZ",
+          "value": "America/Sao_Paulo"
+        },
+        {
+          "name": "JAVA_OPTS",
+          "value": "-Xms128m -Xmx256m"
+        }
+      ],
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8083/notification/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      }
+    }
+  ]
+}

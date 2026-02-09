@@ -1,20 +1,22 @@
 -- ==============================================================
--- 1. CONFIGURAÇÕES DE SCHEMAS
+-- 1. SEGURANÇA BÁSICA
 -- ==============================================================
--- No RDS, em vez de dropar o public, apenas removemos o acesso
 REVOKE ALL ON SCHEMA public FROM PUBLIC;
 
+-- ==============================================================
+-- 2. CRIAÇÃO DOS SCHEMAS
+-- ==============================================================
 CREATE SCHEMA IF NOT EXISTS gl_user;
 CREATE SCHEMA IF NOT EXISTS gl_lista;
 CREATE SCHEMA IF NOT EXISTS gl_notification;
 
 -- ==============================================================
--- 2. CRIAÇÃO DOS USUÁRIOS (ADMIN E APP)
+-- 3. CRIAÇÃO DOS USUÁRIOS
 -- ==============================================================
 
 DO $$
 BEGIN
-   -- Usuários Admin (Donos dos Schemas para o Flyway)
+  -- Owners / Flyway
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'gl_user') THEN
     CREATE USER gl_user WITH PASSWORD 'gl_user';
   END IF;
@@ -27,7 +29,7 @@ BEGIN
     CREATE USER gl_notification WITH PASSWORD 'gl_notification';
   END IF;
 
--- Usuários de Runtime (Uso da Aplicação Spring)
+  -- Runtime apps
   IF NOT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'gl_user_app') THEN
     CREATE USER gl_user_app WITH PASSWORD 'gl_user';
   END IF;
@@ -42,47 +44,76 @@ BEGIN
 END$$;
 
 -- ==============================================================
--- 3. PROPRIEDADE (OWNERSHIP)
+-- 4. OWNERSHIP DOS SCHEMAS
 -- ==============================================================
--- Essencial para o Flyway gerenciar o histórico sem erros
 ALTER SCHEMA gl_user OWNER TO gl_user;
 ALTER SCHEMA gl_lista OWNER TO gl_lista;
 ALTER SCHEMA gl_notification OWNER TO gl_notification;
 
 -- ==============================================================
--- 4. PERMISSÕES DE CONEXÃO E USO
+-- 5. CONEXÃO AO DATABASE
 -- ==============================================================
--- Garante que todos podem se conectar ao banco de dados atual
-GRANT CONNECT ON DATABASE glaiss TO gl_user, gl_user_app;
-GRANT CONNECT ON DATABASE glaiss TO gl_lista, gl_lista_app;
-GRANT CONNECT ON DATABASE glaiss TO gl_notification, gl_notification_app;
+GRANT CONNECT ON DATABASE glaiss TO
+  gl_user, gl_user_app,
+  gl_lista, gl_lista_app,
+  gl_notification, gl_notification_app;
 
--- Permite que os usuários _app "entrem" nos seus respectivos schemas
+-- Permitir uso do schema
 GRANT USAGE ON SCHEMA gl_user TO gl_user_app;
+
+-- Tabelas existentes
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA gl_user
+TO gl_user_app;
+
+-- Sequences existentes
+GRANT USAGE, SELECT
+ON ALL SEQUENCES IN SCHEMA gl_user
+TO gl_user_app;
+
+-- DEFAULT PRIVILEGES (FUTURAS TABELAS)
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_user
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_user_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_user
+GRANT USAGE, SELECT ON SEQUENCES TO gl_user_app;
+
+-- Permitir uso do schema
 GRANT USAGE ON SCHEMA gl_lista TO gl_lista_app;
+
+-- Tabelas existentes
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA gl_lista
+TO gl_lista_app;
+
+-- Sequences existentes
+GRANT USAGE, SELECT
+ON ALL SEQUENCES IN SCHEMA gl_lista
+TO gl_lista_app;
+
+-- DEFAULT PRIVILEGES (FUTURAS TABELAS)
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_lista
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_lista_app;
+
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_lista
+GRANT USAGE, SELECT ON SEQUENCES TO gl_lista_app;
+
+-- Permitir uso do schema
 GRANT USAGE ON SCHEMA gl_notification TO gl_notification_app;
 
--- ==============================================================
--- 5. PRIVILÉGIOS DE DADOS (TABELAS E SEQUENCES)
--- ==============================================================
+-- Tabelas existentes
+GRANT SELECT, INSERT, UPDATE, DELETE
+ON ALL TABLES IN SCHEMA gl_notification
+TO gl_notification_app;
 
--- A. Privilégios para tabelas JÁ EXISTENTES
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gl_user TO gl_user_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA gl_user TO gl_user_app;
+-- Sequences existentes
+GRANT USAGE, SELECT
+ON ALL SEQUENCES IN SCHEMA gl_notification
+TO gl_notification_app;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gl_lista TO gl_lista_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA gl_lista TO gl_lista_app;
+-- DEFAULT PRIVILEGES (FUTURAS TABELAS)
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_notification
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_notification_app;
 
-GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA gl_notification TO gl_notification_app;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA gl_notification TO gl_notification_app;
-
--- B. PRIVILÉGIOS PADRÃO (Crucial: Define o que acontece com tabelas que o Flyway criará no futuro)
--- Nota: Rodamos isso como o usuário 'postgres' (rds_superuser) para definir a regra
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_user GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_user_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_user GRANT USAGE, SELECT ON SEQUENCES TO gl_user_app;
-
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_lista GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_lista_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_lista GRANT USAGE, SELECT ON SEQUENCES TO gl_lista_app;
-
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_notification GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO gl_notification_app;
-ALTER DEFAULT PRIVILEGES IN SCHEMA gl_notification GRANT USAGE, SELECT ON SEQUENCES TO gl_notification_app;
+ALTER DEFAULT PRIVILEGES IN SCHEMA gl_notification
+GRANT USAGE, SELECT ON SEQUENCES TO gl_notification_app;
